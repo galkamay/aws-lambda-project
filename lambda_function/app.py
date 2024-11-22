@@ -1,31 +1,55 @@
 import json
 import boto3
 import os
+import logging
+
+# Configure logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)  # Log everything at INFO level and above
 
 def lambda_handler(event, context):
-    # Read numbers from the event
+    # Log the received event
+    logger.info(f"Received event: {json.dumps(event)}")
+
+    # Validate input
     try:
-        number1 = event['number1']  # Extract 'number1' from the event
-        number2 = event['number2']  # Extract 'number2' from the event
-    except KeyError:
+        number1 = int(event['number1'])
+        number2 = int(event['number2'])
+    except KeyError as e:
+        logger.error(f"Missing key in request: {str(e)}")
         return {
-            "statusCode": 400,  # Return 400 if input is missing
-            "body": json.dumps("Error: Missing 'number1' or 'number2' in request.")
+            "statusCode": 400,
+            "body": json.dumps("Error: 'number1' and 'number2' are required.")
+        }
+    except ValueError as e:
+        logger.error(f"Invalid value in request: {str(e)}")
+        return {
+            "statusCode": 400,
+            "body": json.dumps("Error: 'number1' and 'number2' must be integers.")
         }
 
     # Calculate the sum
-    result = number1 + number2  # Add the two numbers
+    result = number1 + number2
+    logger.info(f"Calculated result: {result}")
 
-    # Publish the result to SNS
-    sns_client = boto3.client('sns')  # Initialize SNS client
-    sns_topic_arn = os.environ['SNS_TOPIC_ARN']  # Get SNS Topic ARN from environment variables
-    sns_client.publish(
-        TopicArn=sns_topic_arn,  # The SNS Topic ARN
-        Message=f"The sum of {number1} and {number2} is {result}."  # Message to publish
-    )
+    # Publish result to SNS
+    sns_client = boto3.client('sns')
+    sns_topic_arn = os.environ['SNS_TOPIC_ARN']  # Topic ARN from environment variable
+    try:
+        sns_client.publish(
+            TopicArn=sns_topic_arn,
+            Message=f"The sum of {number1} and {number2} is {result}."
+        )
+        logger.info("Message successfully published to SNS.")
+    except Exception as e:
+        logger.error(f"Failed to publish to SNS: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": json.dumps("Error: Failed to publish to SNS.")
+        }
 
     # Return the result
     return {
-        "statusCode": 200,  # HTTP 200 success
-        "body": json.dumps({"result": result})  # Return the sum in the response
+        "statusCode": 200,
+        "body": json.dumps({"result": result})
     }
