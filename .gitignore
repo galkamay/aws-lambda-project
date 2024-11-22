@@ -1,0 +1,32 @@
+# Ignore Visual Studio Code settings
+.vscode/
+.vs/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore Terraform files
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Ignore system files
+*.DS_Store
+Thumbs.db
+
+# Ignore zip files for Lambda deployments
+*.zip
+
+# Ignore IDE-specific files
+*.sln
+*.sqlite
+*.json
+*.log
+
+# Ignore node_modules in case of JavaScript projects
+node_modules/
+
+# Ignore log files
+*.log
