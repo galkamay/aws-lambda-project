@@ -1,0 +1,53 @@
+name: Deploy Lambda Function
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Install dependencies for Lambda
+      - name: Install dependencies
+        run: |
+          pip install -r lambda_function/requirements.txt -t lambda_function/
+
+      # 3. Create ZIP for Lambda
+      - name: Create ZIP
+        run: |
+          zip -j lambda_function.zip lambda_function/*
+
+      # 4. Terraform Init
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: terraform
+
+      # 5. Terraform Apply
+      - name: Apply Terraform
+        run: terraform apply -auto-approve
+        working-directory: terraform
+
+      # 6. Get Lambda Function Name from Terraform
+      - name: Get Lambda Function Name
+        id: get_lambda_name
+        run: |
+          echo "LAMBDA_FUNCTION_NAME=$(terraform output -raw lambda_function_name)" >> $GITHUB_ENV
+        working-directory: terraform
+
+      # 7. Deploy to Lambda
+      - name: Deploy to Lambda
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          LAMBDA_FUNCTION_NAME: ${{ env.LAMBDA_FUNCTION_NAME }}
+        run: |
+          aws lambda update-function-code \
+            --function-name $LAMBDA_FUNCTION_NAME \
+            --zip-file fileb://lambda_function.zip
