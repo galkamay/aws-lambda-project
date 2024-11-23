@@ -1,10 +1,10 @@
 output "api_gateway_url" {
-  value       = module.api_gateway.api_url
+  value       = module.api_gateway.api_gateway_url
   description = "The URL to invoke the API Gateway endpoint"
 }
 
 output "lambda_function_name" {
-  value       = module.lambda.lambda_function_name
+  value       = module.lambda.lambda_name
   description = "The name of the Lambda function"
 }
 

@@ -1,9 +1,9 @@
-variable "sns_topic_name" {
-  description = "The name of the SNS topic"
+variable "environment" {
+  description = "Environment name (e.g., dev, prod)"
   type        = string
 }
 
-variable "reviewer_email" {
-  description = "The email address to subscribe to the topic"
+variable "subscriber_email" {
+  description = "Email address to subscribe to SNS topic"
   type        = string
 }

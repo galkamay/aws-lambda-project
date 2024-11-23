@@ -1,16 +1,10 @@
-variable "region" {
-  description = "AWS region"
+variable "sns_topic_arn" {
+  description = "ARN of the SNS topic"
   type        = string
-  default     = "us-east-1"
 }
 
 variable "environment" {
   description = "Environment name (e.g., dev, prod)"
-  type        = string
-}
-
-variable "subscriber_email" {
-  description = "Email address to subscribe to SNS topic"
   type        = string
 }
 

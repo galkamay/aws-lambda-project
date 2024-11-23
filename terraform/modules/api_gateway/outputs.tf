@@ -1,4 +1,4 @@
-output "api_url" {
+output "api_gateway_url" {
+  description = "URL of the API Gateway"
   value       = aws_apigatewayv2_stage.api_stage.invoke_url
-  description = "The URL to invoke the API Gateway"
 }
