@@ -70,4 +70,4 @@ def lambda_handler(event, context):
             "body": json.dumps({"error": "InternalError", "message": "An unexpected error occurred."})
         }
 
-#Compress-Archive -Path app.py -DestinationPath function.zip
+
