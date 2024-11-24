@@ -8,9 +8,6 @@ on:
       - '**.py'
       - '**.tf'
       - '.github/workflows/deploy.yml'
-  pull_request:
-    branches:
-      - main
 
 jobs:
   deploy:
@@ -18,18 +15,18 @@ jobs:
 
     steps:
       # Step 1: Checkout repository
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Configure AWS Credentials
-      - name: Configure AWS Credentials
+      # Step 2: Configure AWS credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # Step 3: Set up Python environment (for zipping Lambda)
+      # Step 3: Set up Python environment for zipping
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -39,8 +36,8 @@ jobs:
       - name: Install zip utility
         run: sudo apt-get install -y zip
 
-      # Step 5: Zip updated Lambda function
-      - name: Zip Lambda function
+      # Step 5: Zip the Lambda function
+      - name: Create function.zip
         run: |
           cd lambda_function
           zip -r function.zip .
@@ -59,12 +56,12 @@ jobs:
         with:
           terraform_version: 1.5.6
 
-      # Step 8: Initialize Terraform
+      # Step 8: Terraform Init
       - name: Terraform Init
         run: terraform init
         working-directory: ./terraform
 
-      # Step 9: Apply Terraform (with auto-approve)
+      # Step 9: Terraform Apply
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: ./terraform
