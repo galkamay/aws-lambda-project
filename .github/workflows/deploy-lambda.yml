@@ -1,30 +1,43 @@
-name: Deploy Lambda with Terraform
+name: Update Lambda Function
 
 on:
   push:
     branches:
       - main
+    paths:
+      - '**.py'
+      - '.github/workflows/deploy-lambda.yml'
 
 jobs:
-  deploy:
+  update-lambda:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Step 2: Install zip utility
       - name: Install zip utility
         run: sudo apt-get install -y zip
 
-      - name: Create Lambda ZIP
+      # Step 3: Create ZIP file
+      - name: Create function.zip
         run: |
           cd lambda_function
           zip -r function.zip .
 
-      - name: Terraform Apply
+      # Step 4: Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # Step 5: Update Lambda Function
+      - name: Update Lambda Function
         run: |
-          terraform init
-          terraform apply -auto-approve
-        working-directory: ./terraform
-        env:
-          TF_VAR_zip_path: "${{ github.workspace }}/lambda_function/function.zip"
+          aws lambda update-function-code \
+            --function-name "SumFunction" \
+            --zip-file fileb://lambda_function/function.zip
