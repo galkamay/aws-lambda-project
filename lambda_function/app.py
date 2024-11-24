@@ -17,7 +17,7 @@ class LambdaError(Exception):
 
 def lambda_handler(event, context):
     try:
-        # Log the received event
+        #Log the received event
         logger.info(f"Received event: {json.dumps(event)}")
 
         # Parse the body from the event

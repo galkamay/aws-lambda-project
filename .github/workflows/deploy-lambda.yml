@@ -3,7 +3,7 @@ name: Update Lambda Function
 on:
   push:
     branches:
-      - main
+      - Main
     paths:
       - '**.py'
 
