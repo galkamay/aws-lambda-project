@@ -8,156 +8,152 @@ This project demonstrates a serverless solution using AWS Lambda, API Gateway, a
 ## **Architecture**
 The system has two key architectural setups:
 
-1. **Stage 1 Architecture:**
-   - Invoke the Lambda function directly using AWS CLI or SDK.
-   - The Lambda function computes the result and publishes it to an SNS topic.
-   - Subscribers to the SNS topic (e.g., an email address) receive the result.
+1. **Infrastructure Management:**
+   - Managed using **Terraform**.
+   - Terraform provisions the following resources:
+     - AWS Lambda (infrastructure only, code deployment managed by GitHub Actions after the first setup).
+     - API Gateway for exposing the Lambda function.
+     - SNS Topic for message delivery.
+     - IAM Roles and Policies.
 
-   ![Stage 1 Architecture](images/Screenshot%202024-11-22%20135508.png)
-
-2. **Stage 2 Architecture:**
-   - Expose the Lambda function via API Gateway.
-   - The API Gateway receives HTTP POST requests and forwards them to the Lambda function.
-   - The Lambda function computes the result, sends it to the SNS topic, and responds back to the client.
-
-   ![Stage 2 Architecture](images/Screenshot%202024-11-22%20135526.png)
-
----
-
-## **Step-by-Step Instructions**
-
-### **1. Clone the Repository**
-Clone the repository and navigate to the project directory:
-```bash
-git clone https://github.com/galkamay/aws-lambda-project.git
-cd aws-lambda-project
-```
+2. **Code Deployment:**
+   - **GitHub Actions** handles:
+     - Zipping and uploading the Lambda function code after the first setup.
+     - Updating the deployed Lambda function without triggering Terraform.
 
 ---
 
-### **2. Package the Lambda Function**
-Navigate to the `lambda_function` directory and create a ZIP package of the Lambda code:
-```bash
-cd lambda_function
-Compress-Archive -Path app.py -DestinationPath function.zip
-```
+## **Project Structure**
+
+- **`.github/workflows`:**
+  - Contains GitHub Actions workflows for building, testing, and deploying the Lambda function.
+  
+- **`terraform/`:**
+  - Contains Terraform configurations for managing AWS infrastructure.
+
+- **`lambda_function/`:**
+  - Contains the source code for the Lambda function.
+
+- **`README.md`:**
+  - Documentation for the project.
 
 ---
 
-### **3. Deploy Infrastructure**
-Use Terraform to deploy the Lambda function, SNS topic, and API Gateway:
-1. Navigate to the Terraform directory:
+## **Setup and Usage**
+
+### Prerequisites
+1. Install **Terraform**:
+   - [Terraform Installation Guide](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+
+2. Install **AWS CLI** and configure your credentials:
    ```bash
-   cd ../terraform
+   aws configure
    ```
-2. Initialize Terraform:
+
+3. Clone the repository:
    ```bash
+   git clone https://github.com/<your-repo>.git
+   cd aws-lambda-project-Main
+   ```
+
+---
+
+### **Terraform Usage**
+
+#### 1. Initialize Terraform:
+   ```bash
+   cd terraform
    terraform init
    ```
-3. Apply the configuration:
+
+#### 2. Create ZIP File Locally (Required for the First Apply Only):
+   Compress the Lambda function code into a ZIP file:
+   ```bash
+   zip -r lambda_function/function.zip lambda_function/
+   ```
+
+#### 3. Apply Terraform Configuration:
+   Provision the infrastructure:
    ```bash
    terraform apply
    ```
-
-**Note:** After deployment, Terraform will output the following:
-- API Gateway URL
-- SNS Topic ARN
-- Lambda Function Name
-
----
-
-### **4. Subscribe to the SNS Topic**
-Use the AWS CLI to subscribe your email to the SNS topic:
-```bash
-aws sns subscribe --topic-arn <sns-topic-arn> --protocol email --notification-endpoint <your-email>
-```
-
-**Confirm the subscription:** Check your email and click on the confirmation link.
+   This creates the following resources:
+   - API Gateway
+   - SNS Topic
+   - Lambda function infrastructure (without code)
 
 ---
 
-### **5. Invoke the Lambda Function**
+### **GitHub Actions Deployment**
 
-#### **Via AWS CLI:**
-```bash
-aws lambda invoke --function-name <lambda-function-name> --payload '{"number1": 5, "number2": 10}' output.json
-```
-**Check the output:**
-```bash
-cat output.json
-```
+GitHub Actions manages the deployment of the Lambda function code. The workflow includes:
+1. **Zip the Lambda Function Code**.
+2. **Deploy to AWS Lambda** using `aws lambda update-function-code`.
 
----
+#### Setting Up GitHub Actions Runner Locally
 
-#### **Via API Gateway:**
-Use `curl` or PowerShell to send a POST request to the API Gateway endpoint:
-```bash
-curl -X POST -d '{"number1": 5, "number2": 10}' -H "Content-Type: application/json" <api-gateway-url>
-```
+If you need to run GitHub Actions locally:
+1. Install the GitHub Actions Runner:
+   - [GitHub Actions Runner Documentation](https://github.com/actions/runner)
 
-**Expected Response:**
-```json
-{
-    "result": 15
-}
-```
-
----
-
-### **6. Handling Invalid Inputs**
-Test the Lambda function with various invalid inputs to verify error handling:
-
-#### **Missing Parameters:**
-```bash
-curl -X POST -d '{"number1": 5}' -H "Content-Type: application/json" <api-gateway-url>
-```
-
-**Response:**
-```json
-{
-    "error": "ValidationError",
-    "message": "Missing key: 'number1' and/or 'number2'"
-}
-```
-
-#### **Invalid Data Types:**
-```bash
-curl -X POST -d '{"number1": "abc", "number2": 10}' -H "Content-Type: application/json" <api-gateway-url>
-```
-
-**Response:**
-```json
-{
-    "error": "ValidationError",
-    "message": "Invalid value: 'number1' and 'number2' must be integers."
-}
-```
-
----
-
-### **7. Monitor Logs**
-Use AWS CloudWatch to monitor the Lambda function logs:
-1. Describe the log streams:
+2. Set up the runner:
    ```bash
-   aws logs describe-log-streams --log-group-name /aws/lambda/SumFunction
+   mkdir actions-runner && cd actions-runner
+   curl -o actions-runner-linux-x64-2.308.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.308.0/actions-runner-linux-x64-2.308.0.tar.gz
+   tar xzf ./actions-runner-linux-x64-2.308.0.tar.gz
+   ./config.sh
    ```
-2. Retrieve log events:
+
+3. Start the runner:
    ```bash
-   aws logs get-log-events --log-group-name /aws/lambda/SumFunction --log-stream-name <log-stream-name>
+   ./run.sh
+   ```
+
+#### Triggering a GitHub Action Workflow
+1. Push code changes to the `main` branch.
+2. GitHub Actions automatically builds and deploys the Lambda function.
+
+---
+
+### **Manual Lambda Function Update**
+In case you want to manually update the Lambda function code:
+1. Zip the function code:
+   ```bash
+   zip -r function.zip lambda_function/
+   ```
+
+2. Update the Lambda function:
+   ```bash
+   aws lambda update-function-code --function-name SumFunction-dev --zip-file fileb://function.zip
    ```
 
 ---
 
-### **8. Cleanup Resources**
-To avoid incurring costs, destroy the infrastructure when you're done:
-```bash
-terraform destroy
-```
+### **Validation**
+- **API Gateway**: Test the endpoint using Postman or `curl`.
+- **SNS**: Confirm message delivery in the SNS topic.
 
 ---
 
-## **Future Enhancements**
-- Add support for additional mathematical operations.
-- Implement authentication for the API Gateway.
-- Integrate with a database to log calculation history.
+## **Troubleshooting**
+
+1. **Terraform Error: Function Already Exists**
+   - If Terraform fails with a conflict error, ensure the function is not already created manually.
+   - Use the following command to delete it:
+     ```bash
+     aws lambda delete-function --function-name SumFunction-dev
+     ```
+
+2. **GitHub Actions Runner Issues**
+   - Verify the runner logs for errors.
+   - Ensure AWS credentials are properly configured.
+
+---
+
+## **Contributing**
+
+Contributions are welcome! Fork the repository and submit a pull request.
+
+---
+
 
