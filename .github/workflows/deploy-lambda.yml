@@ -7,7 +7,7 @@ on:
     paths:
       - '**.py'
       - '**.tf'
-      - '.github/workflows/deploy.yml'
+      - '.github/workflows/deploy-lambda.yml'
 
 jobs:
   deploy:
@@ -26,42 +26,41 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # Step 3: Set up Python environment
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      # Step 4: Install zip utility
+      # Step 3: Install zip utility
       - name: Install zip utility
         run: sudo apt-get install -y zip
 
-      # Step 5: Zip the Lambda function
+      # Step 4: Create function.zip
       - name: Create function.zip
         run: |
           cd lambda_function
           zip -r function.zip .
+        working-directory: .
 
-      # Step 6: Verify ZIP file exists
+      # Step 5: Verify function.zip exists
       - name: Verify function.zip exists
-        run: |
-          if [ ! -f lambda_function/function.zip ]; then
-            echo "Error: function.zip not found!"
-            exit 1
-          fi
+        run: ls -l lambda_function/function.zip
 
-      # Step 7: Set up Terraform
+      # Step 6: List files in lambda_function
+      - name: List files in lambda_function
+        run: ls -l lambda_function
+
+      # Step 7: List files in terraform
+      - name: List files in terraform
+        run: ls -l ./terraform
+
+      # Step 8: Set up Terraform
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.6
 
-      # Step 8: Initialize Terraform
+      # Step 9: Initialize Terraform
       - name: Terraform Init
         run: terraform init
         working-directory: ./terraform
 
-      # Step 9: Apply Terraform with the Correct ZIP Path
+      # Step 10: Apply Terraform with zip_path
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: ./terraform
