@@ -61,10 +61,9 @@ jobs:
         run: terraform init
         working-directory: ./terraform
 
-      # Step 9: Apply Terraform
+      # Step 9: Apply Terraform with the Correct ZIP Path
       - name: Terraform Apply
-        run: |
-          terraform apply -auto-approve
+        run: terraform apply -auto-approve
         working-directory: ./terraform
         env:
           TF_VAR_zip_path: "${{ github.workspace }}/lambda_function/function.zip"
