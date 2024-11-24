@@ -12,20 +12,20 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
 
 resource "aws_apigatewayv2_route" "lambda_route" {
   api_id    = aws_apigatewayv2_api.api.id
-  route_key = "POST /sum"
+  route_key = var.route_key
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
 resource "aws_apigatewayv2_stage" "api_stage" {
   api_id      = aws_apigatewayv2_api.api.id
-  name        = "prod"
+  name        = var.api_stage_name
   auto_deploy = true
 }
 
 resource "aws_lambda_permission" "allow_apigateway" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = var.lambda_arn
+  function_name = var.lambda_function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*"
 }

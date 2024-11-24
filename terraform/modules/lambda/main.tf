@@ -1,5 +1,5 @@
 resource "aws_iam_role" "lambda_exec" {
-  name = "lambda_exec_role-${var.environment}"
+  name = var.lambda_role_name
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -16,7 +16,7 @@ resource "aws_iam_role" "lambda_exec" {
 }
 
 resource "aws_iam_role_policy" "lambda_exec_policy" {
-  name = "lambda_exec_policy-${var.environment}"
+  name = "${var.lambda_role_name}-policy"
   role = aws_iam_role.lambda_exec.id
 
   policy = jsonencode({
@@ -35,7 +35,7 @@ resource "aws_iam_role_policy" "lambda_exec_policy" {
 }
 
 resource "aws_lambda_function" "lambda" {
-  function_name    = "SumFunction-${var.environment}"
+  function_name    = var.lambda_function_name
   runtime          = "python3.9"
   handler          = "app.lambda_handler"
   filename         = var.zip_path
@@ -48,6 +48,3 @@ resource "aws_lambda_function" "lambda" {
     }
   }
 }
-
-
-

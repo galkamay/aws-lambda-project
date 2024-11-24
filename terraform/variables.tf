@@ -18,4 +18,3 @@ variable "zip_path" {
   description = "Path to the zipped Lambda function"
   type        = string
 }
-
