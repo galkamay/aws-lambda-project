@@ -4,71 +4,27 @@ on:
   push:
     branches:
       - main
-    paths:
-      - '**.py'
-      - '**.tf'
-      - '.github/workflows/deploy-lambda.yml'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Configure AWS credentials
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      # Step 3: Install zip utility
       - name: Install zip utility
         run: sudo apt-get install -y zip
 
-      # Step 4: Create function.zip
-      - name: Create function.zip
+      - name: Create Lambda ZIP
         run: |
           cd lambda_function
           zip -r function.zip .
-        working-directory: .
 
-      # Step 5: Verify function.zip exists
-      - name: Verify function.zip exists
-        run: ls -l lambda_function/function.zip
-
-      # Step 6: Debug: Verify ZIP Path
-      - name: Debug: Verify ZIP Path
-        run: |
-          echo "TF_VAR_zip_path=${{ github.workspace }}/lambda_function/function.zip"
-          ls -l ${{ github.workspace }}/lambda_function/function.zip
-
-      # Step 7: List files in lambda_function
-      - name: List files in lambda_function
-        run: ls -l lambda_function
-
-      # Step 8: List files in terraform
-      - name: List files in terraform
-        run: ls -l ./terraform
-
-      # Step 9: Set up Terraform
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.5.6
-
-      # Step 10: Initialize Terraform
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./terraform
-
-      # Step 11: Apply Terraform with zip_path
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: |
+          terraform init
+          terraform apply -auto-approve
         working-directory: ./terraform
         env:
           TF_VAR_zip_path: "${{ github.workspace }}/lambda_function/function.zip"

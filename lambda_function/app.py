@@ -71,4 +71,4 @@ def lambda_handler(event, context):
         }
 
 
-    ##check2.6
+    ##check2.7
