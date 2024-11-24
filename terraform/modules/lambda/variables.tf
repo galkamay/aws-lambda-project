@@ -11,6 +11,6 @@ variable "environment" {
 variable "zip_path" {
   description = "Path to the zipped Lambda function"
   type        = string
-  default     = "lambda_function/function.zip"
+  default     = "../lambda_function/function.zip" 
 }
 
