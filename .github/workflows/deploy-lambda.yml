@@ -49,8 +49,13 @@ jobs:
       - name: Terraform Init
         run: terraform init
         working-directory: ./terraform
+        env:
+          TF_LOG: DEBUG
 
       # Step 9: Apply Terraform (with auto-approve)
       - name: Terraform Apply
         run: terraform apply -auto-approve
         working-directory: ./terraform
+        env:
+          TF_LOG: DEBUG
+
