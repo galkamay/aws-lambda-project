@@ -52,7 +52,7 @@ The system has two key architectural setups:
 
 3. Clone the repository:
    ```bash
-   git clone https://github.com/<your-repo>.git
+   git clone https://github.com/galkamay/aws-lambda-project.git
    cd aws-lambda-project-Main
    ```
 
