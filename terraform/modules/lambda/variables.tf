@@ -9,8 +9,8 @@ variable "environment" {
 }
 
 variable "zip_path" {
-  description = "Path to the zipped Lambda function"
+  description = "Absolute path to the zipped Lambda function"
   type        = string
-  default     = "../lambda_function/function.zip" 
+  default     = "${abspath("${path.module}/../lambda_function/function.zip")}"
 }
 
