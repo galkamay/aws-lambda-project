@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - '**.py'
-      - '.github/workflows/deploy-lambda.yml'
 
 jobs:
   update-lambda:
@@ -35,9 +34,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # Step 5: Update Lambda Function
+      # Step 5: Create Lambda Function if not exists
+      - name: Create Lambda Function if not exists
+        run: |
+          aws lambda get-function --function-name "SumFunction-dev" || \
+          aws lambda create-function \
+            --function-name "SumFunction-dev" \
+            --runtime "python3.9" \
+            --role "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/lambda_exec_role" \
+            --handler "app.lambda_handler" \
+            --zip-file fileb://lambda_function/function.zip
+
+      # Step 6: Update Lambda Function
       - name: Update Lambda Function
         run: |
           aws lambda update-function-code \
-            --function-name "SumFunction" \
+            --function-name "SumFunction-dev" \
             --zip-file fileb://lambda_function/function.zip
