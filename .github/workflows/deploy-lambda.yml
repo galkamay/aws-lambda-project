@@ -41,9 +41,11 @@ jobs:
       - name: Verify function.zip exists
         run: ls -l lambda_function/function.zip
 
-      # Step 6: Verify ZIP file
-      - name: Verify ZIP file
-        run: ls -l ${{ github.workspace }}/lambda_function/function.zip
+      # Step 6: Debug: Verify ZIP Path
+      - name: Debug: Verify ZIP Path
+        run: |
+          echo "TF_VAR_zip_path=${{ github.workspace }}/lambda_function/function.zip"
+          ls -l ${{ github.workspace }}/lambda_function/function.zip
 
       # Step 7: List files in lambda_function
       - name: List files in lambda_function
