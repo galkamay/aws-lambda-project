@@ -1,4 +1,3 @@
-
 # AWS Lambda API for Sum Calculation
 
 This project demonstrates a serverless solution using AWS Lambda, API Gateway, and SNS. The API accepts two numbers as input, calculates their sum, and sends the result to an SNS topic. The system validates input data and handles errors gracefully.
@@ -90,25 +89,6 @@ GitHub Actions manages the deployment of the Lambda function code. The workflow 
 1. **Zip the Lambda Function Code**.
 2. **Deploy to AWS Lambda** using `aws lambda update-function-code`.
 
-#### Setting Up GitHub Actions Runner Locally
-
-If you need to run GitHub Actions locally:
-1. Install the GitHub Actions Runner:
-   - [GitHub Actions Runner Documentation](https://github.com/actions/runner)
-
-2. Set up the runner:
-   ```bash
-   mkdir actions-runner && cd actions-runner
-   curl -o actions-runner-linux-x64-2.308.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.308.0/actions-runner-linux-x64-2.308.0.tar.gz
-   tar xzf ./actions-runner-linux-x64-2.308.0.tar.gz
-   ./config.sh
-   ```
-
-3. Start the runner:
-   ```bash
-   ./run.sh
-   ```
-
 #### Triggering a GitHub Action Workflow
 1. Push code changes to the `main` branch.
 2. GitHub Actions automatically builds and deploys the Lambda function.
@@ -126,6 +106,30 @@ In case you want to manually update the Lambda function code:
    ```bash
    aws lambda update-function-code --function-name SumFunction-dev --zip-file fileb://function.zip
    ```
+
+---
+
+### **Testing the API Gateway**
+
+#### Invoke the API with `curl`:
+```bash
+curl -X POST https://<API_ID>.execute-api.us-east-1.amazonaws.com/prod/sum -H "Content-Type: application/json" -d '{"number1":5,"number2":10}'
+```
+
+#### Invoke the API with PowerShell:
+```powershell
+Invoke-RestMethod -Uri "https://<API_ID>.execute-api.us-east-1.amazonaws.com/prod/sum" `
+                  -Method POST `
+                  -Headers @{"Content-Type" = "application/json"} `
+                  -Body '{"number1":5,"number2":10}'
+```
+
+#### Expected Response:
+```json
+{
+    "result": 15
+}
+```
 
 ---
 
@@ -153,7 +157,3 @@ In case you want to manually update the Lambda function code:
 ## **Contributing**
 
 Contributions are welcome! Fork the repository and submit a pull request.
-
----
-
-
